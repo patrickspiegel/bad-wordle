@@ -1,8 +1,9 @@
 import {words} from "./words.js";
 
 const SAME = "#44d744";
-const SAME = "#44d744";
 const CONTAINS = "#e7a941";
+const DIAL_TIMEOUT = 3000;
+const DIAL_DIAMETER = 400;
 
 /**
  * Returns the table element that is the wordle game
@@ -367,7 +368,7 @@ function endDialRotate(e) {
             if (currentLetterIndex >= 5) {
                 dialTimeout = setTimeout(() => {
                     checkGuess();
-                }, 5000);
+                }, DIAL_TIMEOUT);
             }
         }
     }, 5)
@@ -416,16 +417,16 @@ function createSVG() {
     svg.addEventListener("pointermove", doRotateDial)
     svg.addEventListener("pointerup", endDialRotate);
     const dial = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    dial.setAttribute("cx", 250);
-    dial.setAttribute("cy", 250);
-    dial.setAttribute("r", 250);
+    dial.setAttribute("cx", DIAL_DIAMETER / 2);
+    dial.setAttribute("cy", DIAL_DIAMETER / 2);
+    dial.setAttribute("r", DIAL_DIAMETER / 2);
     dial.setAttribute("fill", "darkgray");
     svg.appendChild(dial);
 
 
-    const r = 230;
-    const cx = 250;
-    const cy = 250;
+    const r = (DIAL_DIAMETER / 2) * 0.9;
+    const cx = DIAL_DIAMETER / 2;
+    const cy = DIAL_DIAMETER / 2;
 
     for (let i = 0; i < 26; i++) {
         const x = cx + Math.cos(degrees_to_radians(270 / 26 * (26 - i))) * r
@@ -437,7 +438,7 @@ function createSVG() {
         number.id = char;
         number.setAttribute("cx", x);
         number.setAttribute("cy", y);
-        number.setAttribute("r", 15);
+        number.setAttribute("r", DIAL_DIAMETER * 0.03);
         number.setAttribute("fill", "white");
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.textContent = char;

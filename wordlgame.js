@@ -351,6 +351,7 @@ function endDialRotate(e) {
         progress -= degrees_to_radians(1);
         svg.setAttribute("style", `transform: rotate(${progress}rad);`);
         if (progress <= 0) {
+            progress = 0;
             clearInterval(interval);
             let counter = 27;
             for (let i = 0; i < 360 - lastProgress; i += 270 / 26) {
@@ -361,7 +362,6 @@ function endDialRotate(e) {
                 addLetter(guessedLetter);
             }
             svg.removeAttribute("style");
-            progress = 0;
             lockedDial = false;
             if (currentLetterIndex >= 5) {
                 dialTimeout = setTimeout(() => {
@@ -414,7 +414,6 @@ function createSVG() {
     svg.addEventListener("pointerdown", initDialRotate);
     svg.addEventListener("pointermove", doRotateDial)
     svg.addEventListener("pointerup", endDialRotate);
-    svg.addEventListener("pointerleave", endDialRotate);
     const dial = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dial.setAttribute("cx", 250);
     dial.setAttribute("cy", 250);

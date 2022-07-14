@@ -3,7 +3,6 @@
     height: 2em;
     width: 2em;
     border-radius: 10%;
-    border-radius: 10%;
 }
 .wordle-cell.same {
     background: #239923;

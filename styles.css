@@ -19,3 +19,23 @@
     user-select: none;
     touch-action: none;
 }
+
+text {
+    pointer-events: none;
+}
+
+.dial-container {
+    position: relative;
+}
+
+.arrow {
+    background: black;
+    width: 75px;
+    height: 15px;
+    position: absolute;
+    pointer-events: none;
+    top: 210px;
+    left: 455px;
+    border-bottom-left-radius: 30%;
+    border-top-left-radius: 30%;
+}

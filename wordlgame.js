@@ -239,12 +239,20 @@ let dialHeight = 0;
 let initialAngle = 0;
 let prevAngle = 0;
 let progress = 0;
+let dialedNumber = "";
 
 /**
  * Inits the dial rotation
  * @param e {PointerEvent}
  */
 function initDialRotate(e) {
+    if (lockedDial === true) {
+        return;
+    }
+    if (!e.target.id)  {
+        return;
+    }
+    dialedNumber = e.target.id;
     rotateDial = true;
     initialX = e.x;
     initialY = e.y;
@@ -257,11 +265,19 @@ function initDialRotate(e) {
     dialHeight = rect.height;
 
     prevAngle = getRadians(e.pageX, e.pageY);
-    initialAngle = ((90 + 360 + radians_to_degrees(prevAngle)) % 360);
-    console.log(initialAngle);
+    initialAngle = (((radians_to_degrees(prevAngle) + 360) % 360) + 90) % 360;
 }
 
 const svg = getSvgElement();
+const hangup = getHangupElement();
+
+/**
+ * Returns the hangup button
+ * @returns {HTMLButtonElement}
+ */
+function getHangupElement() {
+    return document.getElementById("hangup");
+}
 
 /**
  *
@@ -272,9 +288,6 @@ function doRotateDial(e) {
         let angle = getRadians(e.pageX, e.pageY);
         let delta = (angle - prevAngle) % (2 * Math.PI);
 
-        if (delta <  0) {
-            return;
-        }
         prevAngle = angle;
 
         if (delta > 2 * Math.PI) {
@@ -283,25 +296,52 @@ function doRotateDial(e) {
             delta += 2 * Math.PI;
         }
 
+        if (delta < 0) {
+            return
+        }
+
         progress += delta;
-        const deg = (radians_to_degrees(progress));
-        console.log(radians_to_degrees(progress), initialAngle, deg, radians_to_degrees(angle) + initialAngle - 90);
-
-
-        svg.setAttribute("style", `transform: rotate(${progress}rad);`)
+        const deg = (90 + 360 - initialAngle - radians_to_degrees(progress));
+        if (deg > 5) {
+            svg.setAttribute("style", `transform: rotate(${progress}rad);`)
+        } else {
+            progress -= delta;
+        }
     }
 }
 
+let lockedDial = false;
 
 /**
  * Ends the dial rotation
  * @param e {PointerEvent}
  */
 function endDialRotate(e) {
+    lockedDial = true;
     rotateDial = false;
     prevAngle = 0;
-    progress = 0;
-    svg.setAttribute("style", "")
+    const lastProgress = radians_to_degrees(progress);
+    let interval = setInterval(() => {
+        progress -= degrees_to_radians(1);
+        svg.setAttribute("style", `transform: rotate(${progress}rad);`);
+        if (progress <= 0) {
+            let counter = 27;
+            console.log(360 - lastProgress, 360/26)
+            for (let i = 0; i < 360 - lastProgress; i += 270/26) {
+                counter--;
+            }
+            if (counter >= 0) {
+                const guessedLetter = String.fromCharCode(97 + counter);
+                currentGuess += guessedLetter;
+                writeLetter(guessedLetter);
+                currentLetterIndex++;
+            }
+            svg.removeAttribute("style");
+            clearInterval(interval);
+            progress = 0;
+            lockedDial = false;
+        }
+    }, 5)
 }
 
 /**
@@ -328,26 +368,39 @@ function getRadians(x, y) {
     return Math.atan2(deltaY, deltaX);
 }
 
+/**
+ * Do hangup
+ * @param e {MouseEvent}
+ */
+function doHangup(e) {
+    while(currentLetterIndex > 0) {
+        currentLetterIndex--;
+        currentGuess = currentGuess.slice(0, -1);
+        writeLetter("");
+    }
+}
+
 function createSVG() {
+    hangup.addEventListener("click", doHangup);
     svg.addEventListener("pointerdown", initDialRotate);
     svg.addEventListener("pointermove", doRotateDial)
-    svg.addEventListener("pointerleave", endDialRotate);
     svg.addEventListener("pointerup", endDialRotate);
+    svg.addEventListener("pointerleave", endDialRotate);
     const dial = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dial.setAttribute("cx", 250);
     dial.setAttribute("cy", 250);
     dial.setAttribute("r", 250);
     dial.setAttribute("fill", "darkgray");
-
     svg.appendChild(dial);
+
 
     const r = 230;
     const cx = 250;
     const cy = 250;
 
     for (let i = 0; i < 26; i++) {
-        const x = cx + Math.cos(degrees_to_radians(270 / 26 * (25 - i))) * r
-        const y = cy + Math.sin(degrees_to_radians(270 / 26 * (25 - i))) * r
+        const x = cx + Math.cos(degrees_to_radians(270 / 26 * (26 - i))) * r
+        const y = cy + Math.sin(degrees_to_radians(270 / 26 * (26 - i))) * r
 
         const char = String.fromCharCode(65 + i);
         const number = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -367,6 +420,7 @@ function createSVG() {
         svg.appendChild(text);
 
     }
+
 }
 
 /**

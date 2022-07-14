@@ -1,0 +1,20 @@
+.wordle-cell {
+    background: darkgray;
+    height: 2em;
+    width: 2em;
+}
+.wordle-cell.same {
+    background: green;
+}
+.wordle-cell.contains {
+    background: orange;
+}
+.wordle-cell.gray {
+    background: gray;
+}
+
+#dial {
+    width: 500px;
+    height: 500px;
+    user-select: none;
+}

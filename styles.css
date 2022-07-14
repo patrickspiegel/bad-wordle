@@ -5,10 +5,10 @@
     border-radius: 10%;
 }
 .wordle-cell.same {
-    background: #239923;
+    background: #44d744;
 }
 .wordle-cell.contains {
-    background: #d9900e;
+    background: #e7a941;
 }
 .wordle-cell.gray {
     background: gray;
@@ -20,6 +20,12 @@
 }
 .main table {
     margin: auto;
+}
+
+#solution {
+    padding: 2em;
+    margin: auto;
+    font-family: Cambria, serif;
 }
 
 .main .dial-container {

@@ -1,7 +1,8 @@
 import {words} from "./words.js";
 
-const SAME = "#239923FF";
-const CONTAINS = "#d9900e";
+const SAME = "#44d744";
+const SAME = "#44d744";
+const CONTAINS = "#e7a941";
 
 /**
  * Returns the table element that is the wordle game

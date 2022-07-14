@@ -1,5 +1,8 @@
 import {words} from "./words.js";
 
+const SAME = "#239923FF";
+const CONTAINS = "#d9900e";
+
 /**
  * Returns the table element that is the wordle game
  * @returns {HTMLElement}
@@ -66,7 +69,7 @@ function replaceAt(str, index, letter) {
 }
 
 /**
- *
+ * called whenever a user presses a key
  * @param e {KeyboardEvent}
  */
 function onKeyPress(e) {
@@ -74,95 +77,117 @@ function onKeyPress(e) {
         return;
     }
     if (e.key === "Backspace") {
-        if (currentLetterIndex <= 0) {
-            return;
-        }
         // delete one
-        currentLetterIndex--;
-        currentGuess = currentGuess.slice(0, -1);
-        writeLetter("");
+        deleteLetter();
     } else if (e.key === "Enter") {
-        if (currentRowIndex >= 6) {
-            return;
-        }
-        if (currentLetterIndex < 5) {
-            return;
-        }
-        for (const guessedLetter in guessedLetters) {
-            const g = guessedLetters[guessedLetter];
-            if (g !== " " && currentGuess[guessedLetter] !== g) {
-                console.log("Letter known but not used");
-                return;
-            }
-        }
-        if (knownLetters.some(l => !currentGuess.includes(l))) {
-            console.log("known letter not used")
-            return;
-        }
-
-        if (blockedLetters.some(l => currentGuess.includes(l))) {
-            console.log("letter already tried")
-            return;
-        }
-        if (guesses.includes(currentGuess)) {
-            console.log("already guessed")
-            return;
-        }
-        if (!wordList.includes(currentGuess)) {
-            console.log("word not in wordlist");
-            return;
-        }
-
-        let tempWord = word;
-        for (let char = 0; char < currentGuess.length; char++) {
-            const guessedLetter = currentGuess[char];
-            if (tempWord[char] === guessedLetter) {
-                setCellColor(char, "same");
-                setDialColor(guessedLetter, "green");
-                tempWord = replaceAt(tempWord, char, " ");
-                guessedLetters[char] = guessedLetter;
-            }
-
-        }
-        for (const char in currentGuess) {
-            const guessedLetter = currentGuess[char];
-            const index = tempWord.indexOf(guessedLetter);
-            if (index > -1) {
-                setCellColor(char, "contains");
-                tempWord = replaceAt(tempWord, index, " ");
-                knownLetters.push(guessedLetter);
-                setDialColor(guessedLetter, "orange");
-            } else {
-                if (!word.includes(guessedLetter)) {
-                    setDialColor(guessedLetter, "gray");
-                    setCellColor(char, "gray");
-                    blockedLetters.push(guessedLetter);
-                } else if (!tempWord.includes(guessedLetter)) {
-                    setCellColor(char, "gray");
-                }
-            }
-        }
-
-        if (currentGuess === word) {
-            getSolutionEl().innerText = word.toUpperCase();
-            onFinish();
-            return;
-        }
-
-        guesses.push(currentGuess);
-        currentRowIndex++;
-        currentLetterIndex = 0;
-        currentGuess = "";
+        checkGuess();
     } else if (e.key.match("^[aA-zZöÖäÄüÜ]{1}$")) {
-        if (currentLetterIndex >= 5) {
+        const letter = e.key.toLowerCase();
+        addLetter(letter);
+    }
+}
+
+/**
+ * Deletes the last letter
+ */
+function deleteLetter() {
+    if (currentLetterIndex <= 0) {
+        return;
+    }
+    currentLetterIndex--;
+    currentGuess = currentGuess.slice(0, -1);
+    writeLetter("");
+}
+
+/**
+ * adds the letter to the current guess
+ * @param letter {string}
+ */
+function addLetter(letter) {
+    if (currentLetterIndex >= 5) {
+        return;
+    }
+    currentGuess += letter;
+    writeLetter(letter);
+    currentLetterIndex++;
+}
+
+/**
+ * checks for the current guess
+ */
+function checkGuess() {
+
+    if (currentRowIndex >= 6) {
+        return;
+    }
+    if (currentLetterIndex < 5) {
+        return;
+    }
+    for (const guessedLetter in guessedLetters) {
+        const g = guessedLetters[guessedLetter];
+        if (g !== " " && currentGuess[guessedLetter] !== g) {
+            console.log("Letter known but not used");
             return;
         }
-        const letter = e.key.toLowerCase();
-        currentGuess += letter;
-        writeLetter(letter);
-        currentLetterIndex++;
+    }
+    if (knownLetters.some(l => !currentGuess.includes(l))) {
+        console.log("known letter not used")
+        return;
+    }
+
+    if (blockedLetters.some(l => currentGuess.includes(l))) {
+        console.log("letter already tried")
+        return;
+    }
+    if (guesses.includes(currentGuess)) {
+        console.log("already guessed")
+        return;
+    }
+    if (!wordList.includes(currentGuess)) {
+        console.log("word not in wordlist");
+        return;
+    }
+
+    let tempWord = word;
+    for (let char = 0; char < currentGuess.length; char++) {
+        const guessedLetter = currentGuess[char];
+        if (tempWord[char] === guessedLetter) {
+            setCellColor(char, "same");
+            setDialColor(guessedLetter, SAME);
+            tempWord = replaceAt(tempWord, char, " ");
+            guessedLetters[char] = guessedLetter;
+        }
 
     }
+    for (const char in currentGuess) {
+        const guessedLetter = currentGuess[char];
+        const index = tempWord.indexOf(guessedLetter);
+        if (index > -1) {
+            setCellColor(char, "contains");
+            tempWord = replaceAt(tempWord, index, " ");
+            knownLetters.push(guessedLetter);
+            setDialColor(guessedLetter, CONTAINS);
+        } else {
+            if (!word.includes(guessedLetter)) {
+                setDialColor(guessedLetter, "gray");
+                setCellColor(char, "gray");
+                blockedLetters.push(guessedLetter);
+            } else if (!word.includes(guessedLetter)) {
+                setCellColor(char, "gray");
+            }
+        }
+    }
+
+    if (currentGuess === word) {
+        getSolutionEl().innerText = word.toUpperCase();
+        onFinish();
+        return;
+    }
+
+    guesses.push(currentGuess);
+    currentRowIndex++;
+    currentLetterIndex = 0;
+    currentGuess = "";
 }
 
 /**
@@ -249,9 +274,10 @@ function initDialRotate(e) {
     if (lockedDial === true) {
         return;
     }
-    if (!e.target.id)  {
+    if (!e.target.id) {
         return;
     }
+    clearTimeout(dialTimeout);
     dialedNumber = e.target.id;
     rotateDial = true;
     initialX = e.x;
@@ -300,9 +326,9 @@ function doRotateDial(e) {
             return
         }
 
-        progress += delta;
-        const deg = (90 + 360 - initialAngle - radians_to_degrees(progress));
-        if (deg > 5) {
+        const deg = (90 + 360 - initialAngle - radians_to_degrees(progress + delta));
+        if (deg > 5 && deg < 360) {
+            progress += delta;
             svg.setAttribute("style", `transform: rotate(${progress}rad);`)
         } else {
             progress -= delta;
@@ -325,24 +351,28 @@ function endDialRotate(e) {
         progress -= degrees_to_radians(1);
         svg.setAttribute("style", `transform: rotate(${progress}rad);`);
         if (progress <= 0) {
+            clearInterval(interval);
             let counter = 27;
-            console.log(360 - lastProgress, 360/26)
-            for (let i = 0; i < 360 - lastProgress; i += 270/26) {
+            for (let i = 0; i < 360 - lastProgress; i += 270 / 26) {
                 counter--;
             }
             if (counter >= 0) {
                 const guessedLetter = String.fromCharCode(97 + counter);
-                currentGuess += guessedLetter;
-                writeLetter(guessedLetter);
-                currentLetterIndex++;
+                addLetter(guessedLetter);
             }
             svg.removeAttribute("style");
-            clearInterval(interval);
             progress = 0;
             lockedDial = false;
+            if (currentLetterIndex >= 5) {
+                dialTimeout = setTimeout(() => {
+                    checkGuess();
+                }, 5000);
+            }
         }
     }, 5)
 }
+
+let dialTimeout;
 
 /**
  * Returns the degrees from radians
@@ -373,10 +403,9 @@ function getRadians(x, y) {
  * @param e {MouseEvent}
  */
 function doHangup(e) {
-    while(currentLetterIndex > 0) {
-        currentLetterIndex--;
-        currentGuess = currentGuess.slice(0, -1);
-        writeLetter("");
+    clearTimeout(dialTimeout);
+    while (currentLetterIndex > 0) {
+        deleteLetter();
     }
 }
 

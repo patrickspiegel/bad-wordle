@@ -2,15 +2,29 @@
     background: darkgray;
     height: 2em;
     width: 2em;
+    border-radius: 10%;
+    border-radius: 10%;
 }
 .wordle-cell.same {
-    background: green;
+    background: #239923;
 }
 .wordle-cell.contains {
-    background: orange;
+    background: #d9900e;
 }
 .wordle-cell.gray {
     background: gray;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+}
+.main table {
+    margin: auto;
+}
+
+.main .dial-container {
+    margin: auto;
 }
 
 #dial {
